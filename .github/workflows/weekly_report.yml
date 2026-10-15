@@ -2,11 +2,8 @@ name: Weekly Economic Calendar Bot
 
 on:
   schedule:
-    # 매주 월요일 00:00 UTC (한국 시간 월요일 오전 09:00, 
-    # 오전 7시 정각을 맞추려면 UTC 일요일 22:00 또는 월요일 22:00 등 Cron 설정 조정 필요)
-    # 07:00 KST = 22:00 UTC (일요일) -> 매주 월요일 KST 07시 실행 설정 (UTC 기준 월요일 22:00 = KST 화요일이 되므로 정확한 계산 반영)
-    # 한국 시간(KST, UTC+9) 기준 월요일 07:00은 UTC 기준 일요일 22:00입니다.
-    - cron: '0 22 * * 0'
+    # 매주 월요일 오전 05:50 KST (UTC 기준 일요일 20:50)
+    - cron: '50 20 * * 0'
   workflow_dispatch: # 수동 테스트 실행 지원
 
 jobs:
@@ -31,6 +28,6 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          FMP_API_KEY: ${{ secrets.FMP_API_KEY }} # 선택 사항 (무료 API 키)
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
         run: |
           python src/main.py
