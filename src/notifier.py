@@ -91,10 +91,10 @@ def format_report(events):
             if any(k in ev_lower for k in ['cpi', 'ppi', 'gdp', 'fomc', '고용', '소매판매', '기준금리', '베이지북']):
                 stars = "★★★"
             else:
-                stars = "★★ "
+                stars = "★★ " # 별 2개 뒤에 공백을 주어 3글자 폭(★★★)과 일치시킴
             
-            # [시간] 👉 [국기] 👉 [별표] 👉 [이벤트명] 순서로 배치하여 국기 라인을 완벽하게 일직선 정렬
-            report += f"{time_display}  {flag}  {stars}  {event_name}\n"
+            # [시간] [별표] [국기] [이벤트명] 순서로 배치하되 국기 라인이 완벽히 정렬되도록 구성
+            report += f"{time_display}  {stars}  {flag}  {event_name}\n"
             
         report += "\n"
         
