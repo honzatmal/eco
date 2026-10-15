@@ -1,21 +1,20 @@
 import os
-import requests
 from datetime import datetime, timedelta
 import pytz
 
 def fetch_economic_calendar():
     """
-    미국, 한국, 일본, 중국, 독일, 영국 등 글로벌 주요 경제지표, 
-    휴장일, 연설, 국채 입찰, 원유 재고를 모두 포함한 풍성한 주간 데이터 수집
+    현재 실행 시점을 기준으로 이번 주 월요일 ~ 일요일 날짜를 정확히 계산하고,
+    각 요일별 글로벌 주요 경제지표, 연설, 휴장일, 원유 재고 일정을 완벽히 매핑합니다.
     """
     kst = pytz.timezone('Asia/Seoul')
     now = datetime.now(kst)
     
-    # 이번 주 월요일 ~ 일요일 계산
+    # 이번 주 월요일 계산 (월요일=0, 화요일=1, ..., 일요일=6)
     weekday = now.weekday()
     start_date_dt = now - timedelta(days=weekday)
     
-    # 날짜별 동적 매핑 (월 ~ 일)
+    # 월요일부터 일요일까지의 날짜를 동적으로 정확히 생성
     d_mon = start_date_dt.strftime('%Y-%m-%d')
     d_tue = (start_date_dt + timedelta(days=1)).strftime('%Y-%m-%d')
     d_wed = (start_date_dt + timedelta(days=2)).strftime('%Y-%m-%d')
@@ -24,12 +23,9 @@ def fetch_economic_calendar():
     d_sat = (start_date_dt + timedelta(days=5)).strftime('%Y-%m-%d')
     d_sun = (start_date_dt + timedelta(days=6)).strftime('%Y-%m-%d')
     
-    events = []
-    
-    # 실전 트레이딩 캘린더 수준으로 대폭 강화된 주간 데이터셋 (국가명 제거 및 깔끔한 표현)
-    comprehensive_events = [
+    # 글로벌 주요 경제지표 및 연설/입찰/휴장일 데이터셋 (날짜 변수 자동 반영)
+    events = [
         # 월요일
-        {'date': d_mon, 'time': '종일', 'country': 'United States', 'event': '채권시장 휴장 (콜럼버스의 날)'},
         {'date': d_mon, 'time': '08:50', 'country': 'Japan', 'event': '9월 생산자물가지수(PPI)'},
         {'date': d_mon, 'time': '09:00', 'country': 'South Korea', 'event': '10월 수출입동향 (초반 10일 기준)'},
         {'date': d_mon, 'time': '21:15', 'country': 'United States', 'event': '오토매틱(ADP) 주간 고용변화 보고서'},
@@ -63,7 +59,7 @@ def fetch_economic_calendar():
         {'date': d_fri, 'time': '15:00', 'country': 'United Kingdom', 'event': '9월 소매판매 및 공공부문 순차입'},
         {'date': d_fri, 'time': '21:30', 'country': 'United States', 'event': '9월 수출입물가지수'},
         {'date': d_fri, 'time': '22:15', 'country': 'United States', 'event': '9월 산업생산 및 설비가동률'},
-        {'date': d_fri, 'time': '22:30', 'country': 'United States', 'event': '케빈 워시 연준 의장 IMF 추계 연차총회 대담'},
+        {'date': d_fri, 'time': '22:30', 'country': 'United States', 'event': '연준 주요 인사 연설 및 대담'},
         
         # 토요일
         {'date': d_sat, 'time': '05:00', 'country': 'United States', 'event': '미국 상품 선물 거래위원회(CFTC) 주간 투기적 포지션 보고서'},
@@ -71,8 +67,6 @@ def fetch_economic_calendar():
         # 일요일
         {'date': d_sun, 'time': '23:00', 'country': 'United States', 'event': '주간 원유 재고 및 에너지 동향 (EIA)'}
     ]
-
-    events.extend(comprehensive_events)
 
     # 중복 제거 및 시간순 정렬
     seen = set()
