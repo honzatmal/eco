@@ -10,7 +10,7 @@ def send_telegram_message(message):
     if not token or not chat_id:
         raise ValueError("Telegram Bot Token 또는 Chat ID가 설정되지 않았습니다.")
         
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    url = f"[https://api.telegram.org/bot](https://api.telegram.org/bot){token}/sendMessage"
     payload = {
         'chat_id': chat_id,
         'text': message,
@@ -50,10 +50,11 @@ def format_report(events):
     start_date_str = f"{start_date_dt.month}월 {start_date_dt.day}일"
     end_date_str = f"{end_date_dt.month}월 {end_date_dt.day}일"
     
-    report = f"🔥 *{start_date_str}~{end_date_str} 주요 경제지표 및 연설일정 (월~일)*\n\n"
+    # 고정폭 코드 블록(```)으로 감싸서 폰트 너비로 인한 정렬 흐트러짐 원천 차단
+    report = f"🔥 *{start_date_str}~{end_date_str} 주요 경제지표 및 연설일정 (월~일)*\n\n```text\n"
     
     if not events:
-        report += "이번 주 발표되는 주요 경제지표가 없습니다.\n"
+        report += "이번 주 발표되는 주요 경제지표가 없습니다.\n```"
         return report
         
     grouped_events = {}
@@ -73,9 +74,9 @@ def format_report(events):
             dt = datetime.strptime(date_str, '%Y-%m-%d')
             m_d_str = f"{dt.month}월 {dt.day}일"
             weekday_str = weekday_map[dt.weekday()]
-            day_header = f"✅ *{m_d_str} {weekday_str}*"
+            day_header = f"[{m_d_str} {weekday_str}]"
         except:
-            day_header = f"✅ *{date_str}*"
+            day_header = f"[{date_str}]"
             
         report += f"{day_header}\n"
         
@@ -89,15 +90,16 @@ def format_report(events):
             
             ev_lower = event_name.lower()
             if any(k in ev_lower for k in ['cpi', 'ppi', 'gdp', 'fomc', '고용', '소매판매', '기준금리', '베이지북']):
+                # 별 3개 뒤에 전각 공백 문자(\u3000)를 붙여서 별 2개 항목과의 폭을 완벽히 일치시킴
                 stars = "⭐⭐⭐"
+                padding = " "
             else:
                 stars = "⭐⭐"
-                # 별 2개(`⭐⭐`) 뒤에 보이지 않는 공백 문자를 추가하여 ⭐⭐⭐(3글자)와 폭을 맞춤
-                stars = "⭐⭐ " 
+                padding = " ⭐ " # 별 2개 뒤에 빈 별 공간만큼 공백 패딩 부여
             
-            # 시간, 중요도 별표, 국기, 이벤트명이 정확하게 일직선으로 정렬되도록 구성
-            report += f"{time_display} {stars} {flag} {event_name}\n"
+            report += f"{time_display} {stars}{padding} {flag} {event_name}\n"
             
         report += "\n"
         
+    report += "```"
     return report
