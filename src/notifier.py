@@ -87,15 +87,15 @@ def format_report(events):
             flag = get_country_flag(country)
             event_name = e.get('event', '')
             
-            # 중요도 설정 (특정 중요 지표는 3개, 일반 지표는 2개 등으로 자동 부여 또는 기본값 설정)
-            # FOMC, CPI, PPI, GDP, 고용보고서 등 메이저 지표는 ⭐⭐⭐, 나머지는 ⭐⭐
             ev_lower = event_name.lower()
             if any(k in ev_lower for k in ['cpi', 'ppi', 'gdp', 'fomc', '고용', '소매판매', '기준금리', '베이지북']):
                 stars = "⭐⭐⭐"
             else:
                 stars = "⭐⭐"
+                # 별 2개(`⭐⭐`) 뒤에 보이지 않는 공백 문자를 추가하여 ⭐⭐⭐(3글자)와 폭을 맞춤
+                stars = "⭐⭐ " 
             
-            # 시간 뒤에 별표를 나란히 배치하여 라인 정렬
+            # 시간, 중요도 별표, 국기, 이벤트명이 정확하게 일직선으로 정렬되도록 구성
             report += f"{time_display} {stars} {flag} {event_name}\n"
             
         report += "\n"
