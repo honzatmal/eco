@@ -64,7 +64,6 @@ def format_report(events):
             grouped_events[date_key] = []
         grouped_events[date_key].append(e)
         
-    # 요일 순서 (일요일부터 토요일까지)
     weekday_map = {
         6: '일요일', 0: '월요일', 1: '화요일', 2: '수요일', 
         3: '목요일', 4: '금요일', 5: '토요일'
@@ -89,21 +88,8 @@ def format_report(events):
             flag = get_country_flag(country)
             event_name = e.get('event', '')
             
+            # 하단 부가 정보 라인을 완전히 제거하고 깔끔한 한 줄 형태로 출력
             report += f"{time_display} {flag} {event_name}\n"
-            
-            forecast = e.get('forecast', '발표전')
-            previous = e.get('previous', '-')
-            
-            gold_tip = "중립"
-            ev_lower = event_name.lower()
-            if 'cpi' in ev_lower or '인플레이션' in ev_lower or 'ppi' in ev_lower:
-                gold_tip = "물가 지표 연동 변동성 주의"
-            elif 'fomc' in ev_lower or '금리' in ev_lower or '연준' in ev_lower:
-                gold_tip = "통화정책 결정 (금 가격 큰 영향)"
-            elif '원유' in ev_lower or 'eia' in ev_lower:
-                gold_tip = "원유 재고 연동"
-                
-            report += f"   └ 📊 예측: {forecast} | 이전: {previous} | 🥇 {gold_tip}\n"
             
         report += "\n"
         
