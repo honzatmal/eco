@@ -10,7 +10,7 @@ def send_telegram_message(message):
     if not token or not chat_id:
         raise ValueError("Telegram Bot Token 또는 Chat ID가 설정되지 않았습니다.")
         
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    url = f"[https://api.telegram.org/bot](https://api.telegram.org/bot){token}/sendMessage"
     payload = {
         'chat_id': chat_id,
         'text': message,
@@ -50,10 +50,11 @@ def format_report(events):
     start_date_str = f"{start_date_dt.month}월 {start_date_dt.day}일"
     end_date_str = f"{end_date_dt.month}월 {end_date_dt.day}일"
     
-    report = f"🔥 *{start_date_str}~{end_date_str} 주요 경제지표 및 연설일정 (월~일)*\n\n"
+    # 상단 타이틀 아래 고정폭 코드 블록(```text)을 열어줍니다.
+    report = f"🔥 *{start_date_str}~{end_date_str} 주요 경제지표 및 연설일정 (월~일)*\n\n```text\n"
     
     if not events:
-        report += "이번 주 발표되는 주요 경제지표가 없습니다.\n"
+        report += "이번 주 발표되는 주요 경제지표가 없습니다.\n```"
         return report
         
     grouped_events = {}
@@ -73,9 +74,9 @@ def format_report(events):
             dt = datetime.strptime(date_str, '%Y-%m-%d')
             m_d_str = f"{dt.month}월 {dt.day}일"
             weekday_str = weekday_map[dt.weekday()]
-            day_header = f"✅ *{m_d_str} {weekday_str}*"
+            day_header = f"[{m_d_str} {weekday_str}]"
         except:
-            day_header = f"✅ *{date_str}*"
+            day_header = f"[{date_str}]"
             
         report += f"{day_header}\n"
         
@@ -90,12 +91,16 @@ def format_report(events):
             ev_lower = event_name.lower()
             if any(k in ev_lower for k in ['cpi', 'ppi', 'gdp', 'fomc', '고용', '소매판매', '기준금리', '베이지북']):
                 stars = "★★★"
+                padding = "" # 별 3개일 때는 추가 공백 불필요
             else:
-                stars = "★★ " # 별 2개 뒤에 공백을 주어 3글자 폭(★★★)과 일치시킴
+                stars = "★★"
+                padding = "  " # 별 2개 뒤에 빈 별 공간만큼 공백을 주어 국기 시작 위치를 완벽히 일치시킴
             
-            # [시간] [별표] [국기] [이벤트명] 순서로 배치하되 국기 라인이 완벽히 정렬되도록 구성
-            report += f"{time_display}  {stars}  {flag}  {event_name}\n"
+            # [시간] 👉 [별표] 👉 [국기] 👉 [이벤트명] 순서 및 고정폭 칼각 정렬
+            report += f"{time_display}  {stars}{padding}  {flag}  {event_name}\n"
             
         report += "\n"
         
+    # 코드 블록을 닫아줍니다.
+    report += "```"
     return report
