@@ -81,21 +81,21 @@ def format_report(events):
         
         for e in date_events:
             time_str = e.get('time', '')
-            time_display = time_str[:5] if len(time_str) >= 5 else "종일"
+            # 시간 문자열을 5글자로 고정 (종일의 경우 뒤에 공백을 채워 폭 유지)
+            time_display = (time_str[:5] if len(time_str) >= 5 else "종일").ljust(5)
                 
             country = e.get('country', '')
             flag = get_country_flag(country)
             event_name = e.get('event', '')
             
             ev_lower = event_name.lower()
-            # 큼직한 이모지 별(⭐) 대신 작고 슬림한 별표문자(★) 적용
             if any(k in ev_lower for k in ['cpi', 'ppi', 'gdp', 'fomc', '고용', '소매판매', '기준금리', '베이지북']):
                 stars = "★★★"
             else:
-                stars = "★★ "
+                stars = "★★ " # 별 2개 뒤에 공백을 주어 3글자 폭(★★★)과 일치시킴
             
-            # 시간, 작아진 별표, 국기, 이벤트명 출력
-            report += f"{time_display} {stars} {flag} {event_name}\n"
+            # [시간] [국기] [별표] [이벤트명] 순으로 배치하여 국가 라인을 세로로 완벽 정렬
+            report += f"{time_display}  {flag}  {stars}  {event_name}\n"
             
         report += "\n"
         
