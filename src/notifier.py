@@ -1,6 +1,7 @@
 import os
 import requests
 from datetime import datetime, timedelta
+import pytz
 
 def send_telegram_message(message):
     token = os.environ.get('TELEGRAM_BOT_TOKEN')
@@ -22,7 +23,6 @@ def send_telegram_message(message):
     print("텔레그램 메시지 전송 성공!")
 
 def get_country_flag(country_name):
-    """국가 이름에 맞는 국기 이모지 반환"""
     country_lower = country_name.lower()
     if 'united states' in country_lower or 'usa' in country_lower or '미국' in country_lower:
         return "🇺🇸"
@@ -41,18 +41,22 @@ def get_country_flag(country_name):
     return "🌐"
 
 def format_report(events):
-    # 날짜 범위 계산 (이번 주 월요일 ~ 금요일/일요일 등)
-    now = datetime.now()
-    start_date_str = now.strftime('%m월 %d일')
-    end_date_str = (now + timedelta(days=6)).strftime('%m월 %d일')
+    kst = pytz.timezone('Asia/Seoul')
+    now = datetime.now(kst)
+    weekday = now.weekday()
+    days_to_sunday = (weekday + 1) % 7
+    start_date_dt = now - timedelta(days=days_to_sunday)
+    end_date_dt = start_date_dt + timedelta(days=6)
     
-    report = f"🔥 *{start_date_str}~{end_date_str} 주요 경제지표 및 연설일정*\n\n"
+    start_date_str = f"{start_date_dt.month}월 {start_date_dt.day}일"
+    end_date_str = f"{end_date_dt.month}월 {end_date_dt.day}일"
+    
+    report = f"🔥 *{start_date_str}~{end_date_str} 주요 경제지표 및 연설일정 (일~토)*\n\n"
     
     if not events:
         report += "이번 주 발표되는 주요 경제지표가 없습니다.\n"
         return report
         
-    # 날짜별로 이벤트 그룹화
     grouped_events = {}
     for e in events:
         date_key = e.get('date', '기타')
@@ -60,10 +64,10 @@ def format_report(events):
             grouped_events[date_key] = []
         grouped_events[date_key].append(e)
         
-    # 요일 한글 변환 맵
+    # 요일 순서 (일요일부터 토요일까지)
     weekday_map = {
-        0: '월요일', 1: '화요일', 2: '수요일', 
-        3: '목요일', 4: '금요일', 5: '토요일', 6: '일요일'
+        6: '일요일', 0: '월요일', 1: '화요일', 2: '수요일', 
+        3: '목요일', 4: '금요일', 5: '토요일'
     }
     
     for date_str, date_events in sorted(grouped_events.items()):
@@ -79,24 +83,17 @@ def format_report(events):
         
         for e in date_events:
             time_str = e.get('time', '')
-            # 시간 포맷이 HH:MM 형태라면 그대로 사용
-            if len(time_str) >= 5:
-                time_display = time_str[:5]
-            else:
-                time_display = "종일"
+            time_display = time_str[:5] if len(time_str) >= 5 else "종일"
                 
             country = e.get('country', '')
             flag = get_country_flag(country)
             event_name = e.get('event', '')
             
-            # 이미지 스타일의 깔끔한 한 줄 포맷 (시간 + 국기 + 이벤트명)
             report += f"{time_display} {flag} {event_name}\n"
             
-            # 상세형 정보 (예측치/이전치 및 금 매매 영향 참고 추가)
             forecast = e.get('forecast', '발표전')
             previous = e.get('previous', '-')
             
-            # 금 매매 영향 간단 요약
             gold_tip = "중립"
             ev_lower = event_name.lower()
             if 'cpi' in ev_lower or '인플레이션' in ev_lower or 'ppi' in ev_lower:
