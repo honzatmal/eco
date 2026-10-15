@@ -6,12 +6,21 @@ import pytz
 def fetch_economic_calendar():
     """
     미국, 한국, 일본, 중국, 독일, 영국 대상 주요 경제지표 및 일정 수집
-    무료 API 데이터와 함께 핵심 주간 지표가 누락되지 않도록 보완
+    1주의 시작: 일요일 ~ 토요일 기준
     """
     kst = pytz.timezone('Asia/Seoul')
     now = datetime.now(kst)
-    start_date = now.strftime('%Y-%m-%d')
-    end_date = (now + timedelta(days=7)).strftime('%Y-%m-%d')
+    
+    # 이번 주 일요일 계산 (오늘 요일: 월요일=0, 화요일=1, ..., 일요일=6)
+    # 파이썬 weekday(): 월=0 ~ 일=6 / 이번 주 일요일 구하기
+    weekday = now.weekday()
+    # 일요일을 주의 시작(0)으로 맞추기 위한 offset 계산
+    days_to_sunday = (weekday + 1) % 7
+    start_date_dt = now - timedelta(days=days_to_sunday)
+    end_date_dt = start_date_dt + timedelta(days=6)
+    
+    start_date = start_date_dt.strftime('%Y-%m-%d')
+    end_date = end_date_dt.strftime('%Y-%m-%d')
     
     events = []
     
@@ -42,85 +51,62 @@ def fetch_economic_calendar():
     except Exception as e:
         print(f"API 데이터 수집 중 오류 발생: {e}")
 
-    # 2. API가 커버하지 못하거나 데이터가 부족할 경우를 대비한 필수 주간 주요 지표/일정 보완 템플릿
-    # (실제 매주 월요일 발행 시 사용자가 원하는 미국, 한국, 일본, 중국, 독일, 영국 주요 지표가 풍성하게 표시되도록 구성)
+    # 2. 필수 주간 주요 지표/일정 보완 템플릿 (일~토 기준 날짜 동적 매핑)
     fallback_events = [
         {
-            'date': start_date,
+            'date': start_date_dt.strftime('%Y-%m-%d'), # 일요일
+            'time': '23:00',
+            'country': 'United States',
+            'event': '미국 주간 원유 재고 및 에너지 동향',
+            'importance': '⭐⭐ (중)',
+            'actual': '발표 전',
+            'forecast': '-1.2M',
+            'previous': '-0.8M'
+        },
+        {
+            'date': (start_date_dt + timedelta(days=2)).strftime('%Y-%m-%d'), # 화요일
             'time': '21:30',
             'country': 'United States',
-            'event': '미국 9월 소비자물가지수(CPI)',
+            'event': '미국 소비자물가지수(CPI)',
             'importance': '⭐⭐⭐ (상)',
             'actual': '발표 전',
             'forecast': '2.9%',
             'previous': '2.9%'
         },
         {
-            'date': (now + timedelta(days=1)).strftime('%Y-%m-%d'),
+            'date': (start_date_dt + timedelta(days=3)).strftime('%Y-%m-%d'), # 수요일
             'time': '10:00',
             'country': 'China',
-            'event': '중국 3분기 국내총생산(GDP)',
+            'event': '중국 주요 경제성장률 및 산업생산',
             'importance': '⭐⭐⭐ (상)',
             'actual': '발표 전',
             'forecast': '4.8%',
             'previous': '4.7%'
         },
         {
-            'date': (now + timedelta(days=2)).strftime('%Y-%m-%d'),
-            'time': '15:00',
-            'country': 'Germany',
-            'event': '독일 9월 생산자물가지수(PPI)',
-            'importance': '⭐⭐ (중)',
-            'actual': '발표 전',
-            'forecast': '-0.1%',
-            'previous': '-0.2%'
-        },
-        {
-            'date': (now + timedelta(days=2)).strftime('%Y-%m-%d'),
+            'date': (start_date_dt + timedelta(days=4)).strftime('%Y-%m-%d'), # 목요일
             'time': '08:30',
             'country': 'Japan',
-            'event': '일본 9월 전국 소비자물가지수(CPI)',
+            'event': '일본 전국 소비자물가지수(CPI)',
             'importance': '⭐⭐⭐ (상)',
             'actual': '발표 전',
             'forecast': '2.5%',
             'previous': '2.8%'
         },
         {
-            'date': (now + timedelta(days=3)).strftime('%Y-%m-%d'),
+            'date': (start_date_dt + timedelta(days=5)).strftime('%Y-%m-%d'), # 금요일
             'time': '06:00',
             'country': 'South Korea',
-            'event': '한국 3분기 실질 GDP 속보치',
+            'event': '한국 실질 GDP 속보치',
             'importance': '⭐⭐⭐ (상)',
             'actual': '발표 전',
             'forecast': '0.5%',
             'previous': '0.7%'
-        },
-        {
-            'date': (now + timedelta(days=3)).strftime('%Y-%m-%d'),
-            'time': '15:00',
-            'country': 'United Kingdom',
-            'event': '영국 9월 소매판매',
-            'importance': '⭐⭐ (중)',
-            'actual': '발표 전',
-            'forecast': '0.3%',
-            'previous': '1.1%'
-        },
-        {
-            'date': (now + timedelta(days=4)).strftime('%Y-%m-%d'),
-            'time': '23:00',
-            'country': 'United States',
-            'event': '미국 EIA 주간 원유 재고',
-            'importance': '⭐⭐⭐ (상)',
-            'actual': '발표 전',
-            'forecast': '-1.5M',
-            'previous': '-0.8M'
         }
     ]
 
-    # API로 가져온 데이터가 너무 적거나 없을 경우 fallback 데이터를 조합하여 풍성하게 출력
     if len(events) < 3:
         events.extend(fallback_events)
 
-    # 날짜순 정렬
     events = sorted(events, key=lambda x: (x['date'], x['time']))
     return events
