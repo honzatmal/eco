@@ -44,14 +44,13 @@ def format_report(events):
     kst = pytz.timezone('Asia/Seoul')
     now = datetime.now(kst)
     weekday = now.weekday()
-    days_to_sunday = (weekday + 1) % 7
-    start_date_dt = now - timedelta(days=days_to_sunday)
-    end_date_dt = start_date_dt + timedelta(days=6)
+    start_date_dt = now - timedelta(days=weekday) # 이번 주 월요일
+    end_date_dt = start_date_dt + timedelta(days=6)   # 이번 주 일요일
     
     start_date_str = f"{start_date_dt.month}월 {start_date_dt.day}일"
     end_date_str = f"{end_date_dt.month}월 {end_date_dt.day}일"
     
-    report = f"🔥 *{start_date_str}~{end_date_str} 주요 경제지표 및 연설일정 (일~토)*\n\n"
+    report = f"🔥 *{start_date_str}~{end_date_str} 주요 경제지표 및 연설일정 (월~일)*\n\n"
     
     if not events:
         report += "이번 주 발표되는 주요 경제지표가 없습니다.\n"
@@ -64,9 +63,10 @@ def format_report(events):
             grouped_events[date_key] = []
         grouped_events[date_key].append(e)
         
+    # 요일 순서 (월요일부터 일요일까지)
     weekday_map = {
-        6: '일요일', 0: '월요일', 1: '화요일', 2: '수요일', 
-        3: '목요일', 4: '금요일', 5: '토요일'
+        0: '월요일', 1: '화요일', 2: '수요일', 
+        3: '목요일', 4: '금요일', 5: '토요일', 6: '일요일'
     }
     
     for date_str, date_events in sorted(grouped_events.items()):
@@ -88,7 +88,7 @@ def format_report(events):
             flag = get_country_flag(country)
             event_name = e.get('event', '')
             
-            # 하단 부가 정보 라인을 완전히 제거하고 깔끔한 한 줄 형태로 출력
+            # 국가 이름 없이 국기와 시간, 이벤트명만 깔끔하게 출력
             report += f"{time_display} {flag} {event_name}\n"
             
         report += "\n"
