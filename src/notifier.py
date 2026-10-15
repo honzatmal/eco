@@ -88,14 +88,13 @@ def format_report(events):
             event_name = e.get('event', '')
             
             ev_lower = event_name.lower()
+            # 큼직한 이모지 별(⭐) 대신 작고 슬림한 별표문자(★) 적용
             if any(k in ev_lower for k in ['cpi', 'ppi', 'gdp', 'fomc', '고용', '소매판매', '기준금리', '베이지북']):
-                stars = "⭐⭐⭐"
+                stars = "★★★"
             else:
-                stars = "⭐⭐"
-                # 별 2개(`⭐⭐`) 뒤에 보이지 않는 공백 문자를 추가하여 ⭐⭐⭐(3글자)와 폭을 맞춤
-                stars = "⭐⭐ " 
+                stars = "★★ "
             
-            # 시간, 중요도 별표, 국기, 이벤트명이 정확하게 일직선으로 정렬되도록 구성
+            # 시간, 작아진 별표, 국기, 이벤트명 출력
             report += f"{time_display} {stars} {flag} {event_name}\n"
             
         report += "\n"
