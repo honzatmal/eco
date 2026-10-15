@@ -81,7 +81,6 @@ def format_report(events):
         
         for e in date_events:
             time_str = e.get('time', '')
-            # 시간 문자열을 5글자로 고정 (종일의 경우 뒤에 공백을 채워 폭 유지)
             time_display = (time_str[:5] if len(time_str) >= 5 else "종일").ljust(5)
                 
             country = e.get('country', '')
@@ -94,8 +93,8 @@ def format_report(events):
             else:
                 stars = "★★ " # 별 2개 뒤에 공백을 주어 3글자 폭(★★★)과 일치시킴
             
-            # [시간] [국기] [별표] [이벤트명] 순으로 배치하여 국가 라인을 세로로 완벽 정렬
-            report += f"{time_display}  {flag}  {stars}  {event_name}\n"
+            # [시간] [별표] [국기] [이벤트명] 순서로 배치하되 국기 라인이 완벽히 정렬되도록 구성
+            report += f"{time_display}  {stars}  {flag}  {event_name}\n"
             
         report += "\n"
         
